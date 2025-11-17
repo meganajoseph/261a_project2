@@ -1,0 +1,14 @@
+---
+title: "Project 2 Proposal"
+format: pdf
+---
+
+# Research question
+
+# Data
+
+# Model
+
+# Proposed extension
+
+# Analysis plan
