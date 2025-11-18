@@ -1,14 +1,37 @@
 ---
 title: "Project 2 Proposal"
 format: pdf
+bibliography: references.bib
 ---
 
 # Research question
 
+The research question I aim to answer in this analysis is the following: Can college readiness, student demographics, and school demographics predict graduation rates in California high schools? College readiness entails enrollment in AP/IB/Honors courses, taking the SAT/ACT, etc. Student demographics entails enrollment in free and/or reduced lunch programs, students living in poverty, absenteeism, number of suspensions, etc. School demographics entails number of students enrolled, teacher salaries, number of first-time teachers, etc.
+
 # Data
+
+The data I will use is from the Education Data Explorer from the Urban Institute's Center on Education Data and Policy [@Data]. It combines multiple national data sources on schools, districts, and colleges to better analyze trends. I focused on high schools in California and included data on school characteristics, absenteeism, college readiness, course offerings, student demographics, discipline, school safety, student outcomes, and teachers and staff. I've linked the [query](https://educationdata.urban.org/data-explorer/explorer/?educationLevel=K-12&dataLevel=Schools&fipsNumbers=6&startYear=2016&endYear=2017&schoolLevel=high_cedp&charterSchoolOptions=1%2C0&timeframeType=date-range&togglesList=24-78%2C24-79%2C24-86%2C24-88%2C24-89%2C24-90%2C24-91%2C24-92%2C24-95%2C24-96%2C24-37%2C24-47%2C24-48%2C24-49%2C37-19%2C46-9%2C46-10%2C46-11%2C46-12%2C46-13%2C46-14%2C53-15%2C53-16%2C111-1349%2C49-1411%2C120-1333%2C120-1334%2C107-1326%2C107-1327%2C107-1328%2C107-1329%2C107-1330%2C107-1331%2C107-1332%2C118-1352%2C118-1354%2C118-1356%2C118-1358%2C118-1360%2C118-1362%2C118-1364%2C118-1366%2C118-1368%2C118-1369%2C118-1370%2C118-1371%2C118-1372%2C118-1373%2C118-1374%2C118-1375%2C28-97%2C60-98%2C24-100%2C24-101%2C24-102%2C24-103%2C127-1412%2C69-20%2C69-21%2C69-22%2C115-23%2C119-24%2C69-26%2C69-27%2C69-28%2C69-32%2C69-33%2C69-34%2C41-61%2C41-62%2C41-63%2C41-64%2C41-65%2C42-66%2C42-67%2C42-68%2C42-69%2C42-70%2C42-71%2C110-1335%2C110-1336%2C110-1337%2C110-1338%2C110-1339%2C110-1340%2C110-1341%2C110-1342%2C110-1343%2C110-1344%2C110-1345%2C110-1346%2C110-1347%2C110-1348%2C76-1%2C76-2%2C76-5%2C76-6%2C100-1138%2C52-1311%2C52-1312%2C52-1313%2C52-1314%2C52-1316%2C52-1318%2C123-1407%2C52-1319%2C123-1408%2C52-1320%2C123-1409%2C52-1321%2C52-1322%2C52-1323%2C52-1324%2C52-1325%2C123-1400%2C123-1401%2C123-1403%2C123-1404) I used to generate my dataset. The observational unit is an individual high school in California. The key variables of interest are student enrollment, chronically absent students, students enrolled in the International Baccalaureate Diploma Program, students enrolled in the gifted and talented programs, students enrolled in at least one AP course, students who took one or more AP exams, number of students enrolled in a dual enrollment or dual credit program, students participating in the SAT and ACT tests, number of students eligible for free or reduced-price lunch, estimated percentage of students living in poverty, number of suspensions, number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary.
 
 # Model
 
+The model I plan to use is $$Y_i = \beta_0 + \beta_1X_i + \beta_2X_i + ... + \beta_pX_i + \varepsilon$$
+
+where
+
+-   $Y_i$ represents the graduation rate at each school
+
+-   each $\beta_i$ for $i = 0, ..., p-1$ represents the coefficient for each predictor selected
+
+-   $X_i$ is a predictor from college readiness, student demographics, and school demographics
+
+-   $\varepsilon$ represents the error
+
 # Proposed extension
 
+This model will go beyond simple linear regression in that it has multiple predictors and requires variable selection. I may also implement a transformation if necessary. Additionally, interaction terms may be needed depending on what predictors are selected.
+
 # Analysis plan
+
+Regression analysis will allow me to answer this research question because I will be able to quantify how much each predictor impacts predictions for graduation rates while holding other variables constant. I will evaluate my predictions by splitting the data into a train/test/validation split or use cross-validation. Then, I can make multiple models using the base model, interaction terms, transformations, and variable selection. I can compare the validation error between these different models.
+
+# References
