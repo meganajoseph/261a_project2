@@ -37,12 +37,18 @@ This project draws from the data sources Common Core of Data, Small Area Income 
 
 # load libraries
 library(tidyverse)
+library(dplyr)
+library(patchwork)
+#library(ggpubr)
+#library(ggplot2)
+#library(ggtext)
+#library(tidyr)
 
 # load data
 schools <- read.csv("../data/EducationDataPortal_11.16.2025_Schools.csv")
 dd <- read.csv("../data/EducationDataPortal_11.16.2025_datadictionary.csv")
 
-schools_int_var <- schools %>% select(enrollment, title_i_eligible, suspensions_instances, enrl_IB, enrl_gifted_talented, enrl_AP, students_AP_exam_oneormore, students_SAT_ACT, teachers_fte_crdc, teachers_first_year_fte, instructional_aides_fte, counselors_fte, salaries_teachers, grad_rate_midpt)
+schools_int_var <- schools %>% dplyr::select(enrollment, title_i_eligible, suspensions_instances, enrl_IB, enrl_gifted_talented, enrl_AP, students_AP_exam_oneormore, students_SAT_ACT, teachers_fte_crdc, teachers_first_year_fte, instructional_aides_fte, counselors_fte, salaries_teachers, grad_rate_midpt)
 
 cleaned_schools <- schools_int_var %>% filter(enrollment > 0 &
                                                 (title_i_eligible == "Yes" | title_i_eligible == "No") &
@@ -50,6 +56,17 @@ cleaned_schools <- schools_int_var %>% filter(enrollment > 0 &
                                                 (!is.na(enrl_IB) | !is.na(enrl_gifted_talented) | !is.na(enrl_AP)) &
                                                 grad_rate_midpt != "" & grad_rate_midpt != "Suppressed data" &
                                                 salaries_teachers != "Not applicable") 
+cleaned_schools$grad_rate_midpt <- as.numeric(cleaned_schools$grad_rate_midpt)
+
+cleaned_schools$prop_IB <- cleaned_schools$enrl_IB / cleaned_schools$enrollment
+cleaned_schools$prop_IB[is.na(cleaned_schools$prop_IB)] <- 0
+
+cleaned_schools$prop_gat <- cleaned_schools$enrl_gifted_talented / cleaned_schools$enrollment
+
+cleaned_schools$prop_gat[is.na(cleaned_schools$prop_gat)] <- 0
+
+cleaned_schools$prop_ap <- cleaned_schools$enrl_AP / cleaned_schools$enrollment
+cleaned_schools$prop_ap[is.na(cleaned_schools$prop_ap)] <- 0
 ```
 
 The data are from the Education Data Explorer from the Urban Institute's Center on Education Data and Policy. This tool compiles data from national data sources on schools, districts, and colleges in order to assist in creating insights to improve student outcomes [@Data_about].
@@ -60,10 +77,23 @@ Removing all NA values would result in an empty dataset, so I removed a few of t
 
 ## Common Core of Data {#sec-cc}
 
-```{r}
-#| include: false
+```{r fig-ccd}
+#| echo: false
 #| warning: false
 #| message: false
+#| fig-cap: "Figure (a) shows a scatter plot of the graduation rate over the number of students enrolled. Figure (b) shows a boxplot of graduation rate at Title I eligible and ineligible schools."
+
+enrl <- ggplot(data=cleaned_schools, aes(x=enrollment, y=grad_rate_midpt)) + 
+  geom_point() +
+  labs(x="Number of students enrolled", y="Graduation rate", title="Comparison of the number\nof students enrolled in\nCalifornia high schools\nand graduation rate (a)") +
+  theme_minimal()
+
+title1 <- ggplot(data=cleaned_schools, aes(x=title_i_eligible, y=grad_rate_midpt)) + 
+  geom_boxplot() +
+  labs(x="Title I eligible", y="Graduation rate", title="Comparison of graduation\nrate between Title I eligible\nand ineligible California\nhigh schools (b)") + 
+  theme_minimal()
+
+enrl + title1
 ```
 
 The variables student enrollment and Title I eligibility are sourced from Common Core of Data (CCD) [@Data]. The CCD is the United States Department of Education's database on all public elementary and secondary schools and school districts [@CCD].
@@ -71,6 +101,21 @@ The variables student enrollment and Title I eligibility are sourced from Common
 Student enrollment reports the number of students enrolled in the school. A school is Title I eligible if it is in a school district for children from low-income families [@NCES]. I picked these variables because small schools have been linked to higher graduation rates, and students from low-income families tend to have higher dropout rates [@HP2030].
 
 ## The Civil Rights Data Collection {#sec-crdc}
+
+```{r fig-crdc-1}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: "A scatter plot showing the relationship between the proportion of students enrolled in high level courses (x-axis) and graduation rate (y-axis)."
+
+colors <- c("Proportion enrolled in IB" = "purple", "Proportion enrolled in gifted\nand talented" = "skyblue", "Proportion enrolled in AP" = "violetred")
+ggplot() +
+geom_point(data=cleaned_schools, aes(x=prop_IB, y=grad_rate_midpt, color="Proportion enrolled in IB"), alpha=0.2) +
+  geom_point(data=cleaned_schools, aes(x=prop_gat, y=grad_rate_midpt, color="Proportion enrolled in gifted\nand talented"), alpha=0.2) +
+  geom_point(data=cleaned_schools, aes(x=prop_ap, y=grad_rate_midpt, color="Proportion enrolled in AP"), alpha=0.2) +
+  labs(x="Proportion of students enrolled in higher level courses", y="Graduation rate", title="Comparison of students enrolled in higher level courses and\ngraduation rate", color="Legend") +
+  scale_color_manual(values=colors)
+```
 
 The Civil Rights Data Collection (CRDC) comes from the United States Department of Education's Office for Civil Rights. This data is collection in order to ensure schools give students equal access to educational opportunities [@CRDC]. Data are collected from public schools and districts, justice facilities, charter schools, alternative schools, and special education schools [@CRDC].
 
@@ -123,5 +168,6 @@ Identification of potential improvements and extensions or future areas of relat
 # Questions
 
 1.  can't remove all NAs without getting an empty dataset. what to do?
+2.  should i be having this many graphs?? does figure 2 look ok
 
 # References {#sec-ref}
