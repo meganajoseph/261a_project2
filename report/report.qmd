@@ -56,7 +56,9 @@ cleaned_schools <- schools_int_var %>% filter(enrollment > 0 &
                                                 (!is.na(enrl_IB) | !is.na(enrl_gifted_talented) | !is.na(enrl_AP)) &
                                                 grad_rate_midpt != "" & grad_rate_midpt != "Suppressed data" &
                                                 salaries_teachers != "Not applicable") 
+
 cleaned_schools$grad_rate_midpt <- as.numeric(cleaned_schools$grad_rate_midpt)
+cleaned_schools$salaries_teachers <- as.numeric(cleaned_schools$salaries_teachers)
 
 cleaned_schools$prop_IB <- cleaned_schools$enrl_IB / cleaned_schools$enrollment
 cleaned_schools$prop_IB[is.na(cleaned_schools$prop_IB)] <- 0
@@ -81,7 +83,7 @@ Removing all NA values would result in an empty dataset, so I removed a few of t
 #| echo: false
 #| warning: false
 #| message: false
-#| fig-cap: "Figure (a) shows a scatter plot of the graduation rate over the number of students enrolled. Figure (b) shows a boxplot of graduation rate at Title I eligible and ineligible schools."
+#| fig-cap: "Plot (a) shows a scatter plot of the graduation rate over the number of students enrolled. Plot (b) shows a boxplot of graduation rate at Title I eligible and ineligible schools."
 
 enrl <- ggplot(data=cleaned_schools, aes(x=enrollment, y=grad_rate_midpt)) + 
   geom_point() +
@@ -114,7 +116,73 @@ geom_point(data=cleaned_schools, aes(x=prop_IB, y=grad_rate_midpt, color="Propor
   geom_point(data=cleaned_schools, aes(x=prop_gat, y=grad_rate_midpt, color="Proportion enrolled in gifted\nand talented"), alpha=0.2) +
   geom_point(data=cleaned_schools, aes(x=prop_ap, y=grad_rate_midpt, color="Proportion enrolled in AP"), alpha=0.2) +
   labs(x="Proportion of students enrolled in higher level courses", y="Graduation rate", title="Comparison of students enrolled in higher level courses and\ngraduation rate", color="Legend") +
-  scale_color_manual(values=colors)
+  scale_color_manual(values=colors) +
+  theme_minimal()
+```
+
+```{r fig-crdc-2}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: "Plot (a) shows a scatter plot of the graduation rate over the number of students taking at least one AP exam. Plot (b) shows a scatter plot of the graduation rate over the number of students taking either the SAT or ACT."
+
+ap <- ggplot(data=cleaned_schools, aes(x=students_AP_exam_oneormore, y=grad_rate_midpt)) + 
+  geom_point() +
+  labs(x="Number of students taking at least\none AP exam", y="Graduation rate", title="Comparison of the number\nof students taking at least\none AP exam and graduation\nrate (a)") +
+  theme_minimal()
+
+sat <- ggplot(data=cleaned_schools, aes(x=students_SAT_ACT, y=grad_rate_midpt)) + 
+  geom_point() +
+  labs(x="Number of students taking the SAT\nor ACT", y="Graduation rate", title="Comparison of the number\nof students taking at the\nSAT or ACT and graduation\nrate (b)") + 
+  theme_minimal()
+
+ap + sat
+```
+
+```{r fig-crdc-3}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: "This shows the relationship between the number of suspensions in a school (x-axis) and graduation rate (y-axis)."
+
+ggplot(data=cleaned_schools, aes(x=suspensions_instances, y=grad_rate_midpt)) +
+  geom_point() +
+  labs(x="Number of suspensions", y="Graduation rate", title="Comparison of the number of suspensions and graduation\nrate") + 
+  theme_minimal()
+```
+
+```{r fig-crdc-4, fig.width=8, fig.height=8}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: "Plot (a) shows the relationship between the number of full-time teachers (x-axis) and graduation rate (y-axis). Plot (b) shows the relationship between the number of first year teachers (x-axis) and graduation rate (y-axis). Plot (c) shows the relationship between the number of instructional aides and paraprofessionals (x-axis) and graduation rate (y-axis). Plot (d) shows the relationship between the number of counselors (x-axis) and graduation rate (y-axis). Plot (e) shows the relationship between teacher salary (x-axis) and graduation rate (y-axis)."
+
+ftt <- ggplot(data=cleaned_schools, aes(x=teachers_fte_crdc, y=grad_rate_midpt)) + 
+geom_point() +
+  labs(x="Number of full-time teachers", y="Graduation rate", title="Comparison of the number of full-time\nteachers and graduation rate (a)") +
+  theme_minimal()
+
+fyt <- ggplot(data=cleaned_schools, aes(x=teachers_first_year_fte, y=grad_rate_midpt)) +
+  geom_point() +
+  labs(x="Number of first year teachers", y="Graduation rate", title="Comparison of the number of first year\nteachers and graduation rate (b)") +
+  theme_minimal()
+
+fta <- ggplot(data=cleaned_schools, aes(x=instructional_aides_fte, y=grad_rate_midpt)) +
+  geom_point() +
+  labs(x="Number of instructional aides and paraprofessionals", y="Graduation rate", title="Comparison of the number of\ninstructional aides and paraprofessionals\nand graduation rate (c)") +
+  theme_minimal()
+
+ftc <- ggplot(data=cleaned_schools, aes(x=counselors_fte, y=grad_rate_midpt)) + 
+  geom_point() +
+  labs(x="Number of counselors", y="Graduation rate", title="Comparison of the number of counselors\nand graduation rate (d)") +
+  theme_minimal()
+
+ts <- ggplot(data=cleaned_schools, aes(x=salaries_teachers, y=grad_rate_midpt)) + 
+  geom_point() +
+  labs(x="Salaries of teachers", y="Graduation rate", title="Comparison of the salaries of teachers and graduation rate (e)") +
+  theme_minimal() 
+  
+(ftt + fyt) / (fta + ftc) / ts
 ```
 
 The Civil Rights Data Collection (CRDC) comes from the United States Department of Education's Office for Civil Rights. This data is collection in order to ensure schools give students equal access to educational opportunities [@CRDC]. Data are collected from public schools and districts, justice facilities, charter schools, alternative schools, and special education schools [@CRDC].
