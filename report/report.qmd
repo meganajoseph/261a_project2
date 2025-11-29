@@ -100,7 +100,7 @@ enrl + title1
 
 The variables student enrollment and Title I eligibility are sourced from Common Core of Data (CCD) [@Data]. The CCD is the United States Department of Education's database on all public elementary and secondary schools and school districts [@CCD].
 
-Student enrollment reports the number of students enrolled in the school. A school is Title I eligible if it is in a school district for children from low-income families [@NCES]. I picked these variables because small schools have been linked to higher graduation rates, and students from low-income families tend to have higher dropout rates [@HP2030].
+Student enrollment reports the number of students enrolled in the school. @fig-ccd (a) shows a logarithmic relationship, so a log transformation should be applied. A school is Title I eligible if it is in a school district for children from low-income families [@NCES]. @fig-ccd (b) shows that schools that are not Title I eligible have a higher median graduation rate and is less varied, whereas schools that are Title I eligible are much more varied with a larger number of outliers. I picked these variables because small schools have been linked to higher graduation rates, and students from low-income families tend to have higher dropout rates [@HP2030].
 
 ## The Civil Rights Data Collection {#sec-crdc}
 
@@ -108,7 +108,7 @@ Student enrollment reports the number of students enrolled in the school. A scho
 #| echo: false
 #| warning: false
 #| message: false
-#| fig-cap: "A scatter plot showing the relationship between the proportion of students enrolled in high level courses (x-axis) and graduation rate (y-axis)."
+#| fig-cap: "A scatter plot showing the relationship between the proportion of students enrolled in high level courses including the IB program (purple), AP program (pink), and gifted and talented programs (blue) (x-axis) and graduation rate (y-axis)."
 
 colors <- c("Proportion enrolled in IB" = "purple", "Proportion enrolled in gifted\nand talented" = "skyblue", "Proportion enrolled in AP" = "violetred")
 ggplot() +
@@ -187,9 +187,9 @@ ts <- ggplot(data=cleaned_schools, aes(x=salaries_teachers, y=grad_rate_midpt)) 
 
 The Civil Rights Data Collection (CRDC) comes from the United States Department of Education's Office for Civil Rights. This data is collection in order to ensure schools give students equal access to educational opportunities [@CRDC]. Data are collected from public schools and districts, justice facilities, charter schools, alternative schools, and special education schools [@CRDC].
 
-The variables from this dataset are the number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, the number of students enrolled in at least one AP course, the number of students that took one or more AP exams, the number of students participating in the SAT or ACT, the number of suspensions, the number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary.
+The variables from this dataset are the number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, the number of students enrolled in at least one AP course, the number of students that took one or more AP exams, the number of students participating in the SAT or ACT, the number of suspensions, the number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary. The number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, and the number of students enrolled in at least one AP course were transformed to the proportion of students enrolled in each respective program because that is more informative. @fig-crdc-1 shows a logarithmic relationship between these programs and graduation rate. @fig-crdc-2, @fig-crdc-3, @fig-crdc-4, and @fig-crdc-5 also show logarithmic relationships between the selected variables and graduation rate, so a log transformation is appropriate.
 
-I picked these variables because tudents participating in higher level courses, taking college classes, and/or participating in college-preparatory exams would be most interested in graduating and going to college. Suspensions would make it more difficult for students to graduate. Increased support from experienced teachers and other aides can motivate students to do well in school. Higher teacher salary will motivate teachers to put more effort in helping their students.
+I picked these variables because students participating in higher level courses, taking college classes, and/or participating in college-preparatory exams would be most interested in graduating and going to college. Suspensions would make it more difficult for students to graduate. Increased support from experienced teachers and other aides can motivate students to do well in school. Higher teacher salary will motivate teachers to put more effort in helping their students.
 
 ## ED*Facts* {#sec-edfacts}
 
@@ -198,8 +198,6 @@ High school graduation rate comes from the ED*Facts* dataset. ED*Facts* collects
 ## Alternative Data Sources
 
 A good alternate data source would be at the student level rather than the school level. This can be difficult to find, though, because the students are not legal adults and due to Family Educational Rights and Privacy Act (FERPA) which protects the distribution of educational records without the consent of parents or the student if they are over 18 years old. Information on absenteeism, family income level, extracurriculars of the students, involvement of parents and teachers, and reading level would also help in predicting graduation rates.
-
-highlight any critical characteristics of the data using visualizations or summary tables.
 
 # Methods {#sec-methods}
 
@@ -237,5 +235,8 @@ Identification of potential improvements and extensions or future areas of relat
 
 1.  can't remove all NAs without getting an empty dataset. what to do?
 2.  should i be having this many graphs?? does figure 2 look ok
+3.  still confused about interaction, esp how to check
+4.  should i put a graph of the log transformations?
+5.  do i need to make a graph or anything for graduation rate?
 
 # References {#sec-ref}
