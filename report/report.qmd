@@ -8,11 +8,6 @@ abstract: ""
 format: pdf
 bibliography: references.bib
 number-sections: true
-include-in-header: 
-  text: |
-    \usepackage{fvextra}
-    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
-editor: visual
 ---
 
 # Introduction {#sec-intro}
@@ -222,9 +217,34 @@ A good alternate data source would be at the student level rather than the schoo
 
 # Methods {#sec-methods}
 
-In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $Y_i$ represent the graduation rate at an individual school. Let $X_{i1}$ represent the number of students enrolled at that school, $X_{i2}$ equal 1 if a school is Title I eligible and 0 if it's not, $X_{i3}$ represent the number of students enrolled in the International Baccalaureate Diploma Program, $X_{i4}$ represent the number of students enrolled in the AP program, $X_{i5}$ represent the number of students enrolled in the gifted and talented program, $X_{i6}$ represent the number of students that took one or more AP exams, $X_{i7}$ represent the number of students participating in the SAT or ACT, $X_{i8}$ represent the number of suspensions, $X_{i9}$ represent the number of full-time teachers, $X_{i,10}$ represent the number of first-year teachers, $X_{i, 11}$ represent the number of full-time equivalent instructional aides or paraprofessionals, $X_{i, 12}$ represent the number of full-time equivalent school counselors, and $X_{i, 13}$ represent teacher salary. 
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
 
-The model can we written as $$Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \beta_3 X_{i3} + \beta_4 X_{i4} + \beta_5 X_{i5} + \beta_6 X_{i6} + \beta_7 X_{i7} + \beta_8 X_{i8} + \beta_9 X_{i9} + \beta_{10} X_{i,10} + \beta_{11} X_{i,11} + \beta_{12} X_{i,12} + \beta_{13} X_{i,13} + \varepsilon_i \text{ for i = 1, ..., n}$$ where $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant, $n$ is the number of schools in the dataset, and $\varepsilon_i$ represents the error.
+# split into training/tst
+library("tidymodels")
+schools_split <- initial_validation_split(cleaned_schools, prop=c(0.7, 0.15))
+
+train <- training(schools_split)
+valid <- validation(schools_split)
+test <- testing(schools_split)
+
+base <- lm(grad_rate_midpt ~ enrollment + title_i_eligible + enrl_IB + enrl_AP + enrl_gifted_talented + students_AP_exam_oneormore + students_SAT_ACT + suspensions_instances + teachers_fte_crdc + teachers_first_year_fte + instructional_aides_fte + counselors_fte + salaries_teachers, data=train)
+```
+
+In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $Y_i$ represent the graduation rate at an individual school. Let $X_{i1}$ represent the number of students enrolled at that school, $X_{i2}$ equal 1 if a school is Title I eligible and 0 if it's not, $X_{i3}$ represent the number of students enrolled in the International Baccalaureate Diploma Program, $X_{i4}$ represent the number of students enrolled in the AP program, $X_{i5}$ represent the number of students enrolled in the gifted and talented program, $X_{i6}$ represent the number of students that took one or more AP exams, $X_{i7}$ represent the number of students participating in the SAT or ACT, $X_{i8}$ represent the number of suspensions, $X_{i9}$ represent the number of full-time teachers, $X_{i,10}$ represent the number of first-year teachers, $X_{i, 11}$ represent the number of full-time equivalent instructional aides or paraprofessionals, $X_{i, 12}$ represent the number of full-time equivalent school counselors, and $X_{i, 13}$ represent teacher salary.
+
+The model can we written as $$Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \beta_3 X_{i3} + \beta_4 X_{i4} + \beta_5 X_{i5} + \beta_6 X_{i6} + \beta_7 X_{i7} + \beta_8 X_{i8} + \beta_9 X_{i9} + \beta_{10} X_{i,10} + \beta_{11} X_{i,11} + \beta_{12} X_{i,12} + \beta_{13} X_{i,13} + \varepsilon_i \text{ for i = 1, ..., n}$$ where $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $\beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant, $n$ is the number of schools in the dataset, and $\varepsilon_i$ represents the error.
+
+The assumptions for linear regression are:
+
+1.  The variables used accurately reflect the quantities of interest, the model should include all predictors, and the model should be applicable for the research question.
+2.  The sample data is representative of the population of interest.
+3.  The mean function must be correct.
+4.  Errors must be independent.
+5.  The variance of the errors must be equal.
+6.  Errors must be normal.
 
 present any model or statistical methods clearly using mathematical notation and plain English explanations.
 
@@ -263,6 +283,8 @@ Identification of potential improvements and extensions or future areas of relat
 4.  should i put a graph of the log transformations?
 5.  do i need to make a graph or anything for graduation rate?
 6.  instead of seeing if there is enrollment in either ap, ib, or other program, should i do any program at all? (get issue with students being in multiple programs)
-7.  can i write the model in matrix form or does it have to be all written out
+7.  can i write the model in matrix form or does it have to be all written out. if latter how to get math to not go off the page
+8.  are the assumptions different?
+9.  if i know there is a log relationship, should i start start with the most basic model or do a transformation as the first model?
 
 # References {#sec-ref}
