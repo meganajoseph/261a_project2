@@ -8,6 +8,11 @@ abstract: ""
 format: pdf
 bibliography: references.bib
 number-sections: true
+include-in-header: 
+  text: |
+    \usepackage{fvextra}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+editor: visual
 ---
 
 # Introduction {#sec-intro}
@@ -50,10 +55,13 @@ dd <- read.csv("../data/EducationDataPortal_11.16.2025_datadictionary.csv")
 
 schools_int_var <- schools %>% dplyr::select(enrollment, title_i_eligible, suspensions_instances, enrl_IB, enrl_gifted_talented, enrl_AP, students_AP_exam_oneormore, students_SAT_ACT, teachers_fte_crdc, teachers_first_year_fte, instructional_aides_fte, counselors_fte, salaries_teachers, grad_rate_midpt)
 
+schools_int_var$enrl_IB[is.na(schools_int_var$enrl_IB)] <- 0
+schools_int_var$enrl_gifted_talented[is.na(schools_int_var$enrl_gifted_talented)] <- 0
+schools_int_var$enrl_AP[is.na(schools_int_var$enrl_AP)] <- 0
+
 cleaned_schools <- schools_int_var %>% filter(enrollment > 0 &
                                                 (title_i_eligible == "Yes" | title_i_eligible == "No") &
                                                 suspensions_instances >= 0 &
-                                                (!is.na(enrl_IB) | !is.na(enrl_gifted_talented) | !is.na(enrl_AP)) &
                                                 grad_rate_midpt != "" & grad_rate_midpt != "Suppressed data" &
                                                 salaries_teachers != "Not applicable") 
 
@@ -69,6 +77,8 @@ cleaned_schools$prop_gat[is.na(cleaned_schools$prop_gat)] <- 0
 
 cleaned_schools$prop_ap <- cleaned_schools$enrl_AP / cleaned_schools$enrollment
 cleaned_schools$prop_ap[is.na(cleaned_schools$prop_ap)] <- 0
+
+cleaned_schools$prop_adv <- (cleaned_schools$enrl_AP + cleaned_schools$enrl_gifted_talented + cleaned_schools$enrl_IB) / cleaned_schools$enrollment
 ```
 
 The data are from the Education Data Explorer from the Urban Institute's Center on Education Data and Policy. This tool compiles data from national data sources on schools, districts, and colleges in order to assist in creating insights to improve student outcomes [@Data_about].
@@ -120,6 +130,16 @@ geom_point(data=cleaned_schools, aes(x=prop_IB, y=grad_rate_midpt, color="Propor
   theme_minimal()
 ```
 
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+ggplot(data=cleaned_schools, aes(x=prop_adv, y=grad_rate_midpt)) +
+  geom_point()
+
+```
+
 ```{r fig-crdc-2}
 #| echo: false
 #| warning: false
@@ -137,6 +157,7 @@ sat <- ggplot(data=cleaned_schools, aes(x=students_SAT_ACT, y=grad_rate_midpt)) 
   theme_minimal()
 
 ap + sat
+
 ```
 
 ```{r fig-crdc-3}
@@ -189,7 +210,7 @@ The Civil Rights Data Collection (CRDC) comes from the United States Department 
 
 The variables from this dataset are the number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, the number of students enrolled in at least one AP course, the number of students that took one or more AP exams, the number of students participating in the SAT or ACT, the number of suspensions, the number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary. The number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, and the number of students enrolled in at least one AP course were transformed to the proportion of students enrolled in each respective program because that is more informative. @fig-crdc-1 shows a logarithmic relationship between these programs and graduation rate. @fig-crdc-2, @fig-crdc-3, @fig-crdc-4, and @fig-crdc-5 also show logarithmic relationships between the selected variables and graduation rate, so a log transformation is appropriate.
 
-I picked these variables because students participating in higher level courses, taking college classes, and/or participating in college-preparatory exams would be most interested in graduating and going to college. Suspensions would make it more difficult for students to graduate. Increased support from experienced teachers and other aides can motivate students to do well in school. Higher teacher salary will motivate teachers to put more effort in helping their students.
+I picked these variables because students participating in higher level courses and/or participating in college-preparatory exams would be most interested in graduating and going to college. Suspensions would make it more difficult for students to graduate. Increased support from experienced teachers and other aides can motivate students to do well in school. Higher teacher salary will motivate teachers to put more effort in helping their students.
 
 ## ED*Facts* {#sec-edfacts}
 
@@ -201,8 +222,11 @@ A good alternate data source would be at the student level rather than the schoo
 
 # Methods {#sec-methods}
 
-present any model or statistical methods clearly using\
-mathematical notation and plain English explanations.
+In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $Y_i$ represent the graduation rate at an individual school. Let $X_{i1}$ represent the number of students enrolled at that school, $X_{i2}$ equal 1 if a school is Title I eligible and 0 if it's not, $X_{i3}$ represent the number of students enrolled in the International Baccalaureate Diploma Program, $X_{i4}$ represent the number of students enrolled in the AP program, $X_{i5}$ represent the number of students enrolled in the gifted and talented program, $X_{i6}$ represent the number of students that took one or more AP exams, $X_{i7}$ represent the number of students participating in the SAT or ACT, $X_{i8}$ represent the number of suspensions, $X_{i9}$ represent the number of full-time teachers, $X_{i,10}$ represent the number of first-year teachers, $X_{i, 11}$ represent the number of full-time equivalent instructional aides or paraprofessionals, $X_{i, 12}$ represent the number of full-time equivalent school counselors, and $X_{i, 13}$ represent teacher salary. 
+
+The model can we written as $$Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \beta_3 X_{i3} + \beta_4 X_{i4} + \beta_5 X_{i5} + \beta_6 X_{i6} + \beta_7 X_{i7} + \beta_8 X_{i8} + \beta_9 X_{i9} + \beta_{10} X_{i,10} + \beta_{11} X_{i,11} + \beta_{12} X_{i,12} + \beta_{13} X_{i,13} + \varepsilon_i \text{ for i = 1, ..., n}$$ where $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant, $n$ is the number of schools in the dataset, and $\varepsilon_i$ represents the error.
+
+present any model or statistical methods clearly using mathematical notation and plain English explanations.
 
 Every symbol and component of the model should be introduced and described.
 
@@ -238,5 +262,7 @@ Identification of potential improvements and extensions or future areas of relat
 3.  still confused about interaction, esp how to check
 4.  should i put a graph of the log transformations?
 5.  do i need to make a graph or anything for graduation rate?
+6.  instead of seeing if there is enrollment in either ap, ib, or other program, should i do any program at all? (get issue with students being in multiple programs)
+7.  can i write the model in matrix form or does it have to be all written out
 
 # References {#sec-ref}
