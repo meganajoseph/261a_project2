@@ -53,6 +53,8 @@ schools_int_var <- schools %>% dplyr::select(enrollment, title_i_eligible, suspe
 schools_int_var$enrl_IB[is.na(schools_int_var$enrl_IB)] <- 0
 schools_int_var$enrl_gifted_talented[is.na(schools_int_var$enrl_gifted_talented)] <- 0
 schools_int_var$enrl_AP[is.na(schools_int_var$enrl_AP)] <- 0
+schools_int_var$students_AP_exam_oneormore[is.na(schools_int_var$students_AP_exam_oneormore)] <- 0
+
 
 cleaned_schools <- schools_int_var %>% filter(enrollment > 0 &
                                                 (title_i_eligible == "Yes" | title_i_eligible == "No") &
@@ -64,16 +66,9 @@ cleaned_schools$grad_rate_midpt <- as.numeric(cleaned_schools$grad_rate_midpt)
 cleaned_schools$salaries_teachers <- as.numeric(cleaned_schools$salaries_teachers)
 
 cleaned_schools$prop_IB <- cleaned_schools$enrl_IB / cleaned_schools$enrollment
-cleaned_schools$prop_IB[is.na(cleaned_schools$prop_IB)] <- 0
-
 cleaned_schools$prop_gat <- cleaned_schools$enrl_gifted_talented / cleaned_schools$enrollment
-
-cleaned_schools$prop_gat[is.na(cleaned_schools$prop_gat)] <- 0
-
 cleaned_schools$prop_ap <- cleaned_schools$enrl_AP / cleaned_schools$enrollment
-cleaned_schools$prop_ap[is.na(cleaned_schools$prop_ap)] <- 0
-
-cleaned_schools$prop_adv <- (cleaned_schools$enrl_AP + cleaned_schools$enrl_gifted_talented + cleaned_schools$enrl_IB) / cleaned_schools$enrollment
+cleaned_schools$salaries_teachers <- as.numeric(cleaned_schools$salaries_teachers)
 ```
 
 The data are from the Education Data Explorer from the Urban Institute's Center on Education Data and Policy. This tool compiles data from national data sources on schools, districts, and colleges in order to assist in creating insights to improve student outcomes [@Data_about].
@@ -82,92 +77,59 @@ I used this [query](https://educationdata.urban.org/data-explorer/explorer/?educ
 
 Removing all NA values would result in an empty dataset, so I removed a few of them and left the for variables like number of students enrolled in the IB program because that would most likely mean it is not offered at that school while another program like AP is offered. After removing these, the dataset has `r nrow(cleaned_schools)` observations while the original has `r nrow(schools)` observations.
 
-## Common Core of Data {#sec-cc}
-
-```{r fig-ccd}
+```{r fig-school, fig.width=8, fig.height=6}
 #| echo: false
 #| warning: false
 #| message: false
-#| fig-cap: "Plot (a) shows a scatter plot of the graduation rate over the number of students enrolled. Plot (b) shows a boxplot of graduation rate at Title I eligible and ineligible schools."
+#| fig-cap: "Plot (a) shows a scatter plot of the graduation rate over the number of students enrolled. Plot (b) shows a boxplot of graduation rate at Title I eligible and ineligible schools. Plot (c) shows the relationship between the number of suspensions in a school (x-axis) and graduation rate (y-axis)."
 
 enrl <- ggplot(data=cleaned_schools, aes(x=enrollment, y=grad_rate_midpt)) + 
   geom_point() +
-  labs(x="Number of students enrolled", y="Graduation rate", title="Comparison of the number\nof students enrolled in\nCalifornia high schools\nand graduation rate (a)") +
+  labs(x="Number of students enrolled", y="Graduation rate", title="Comparison of the number of students\nenrolled in California high schools and\ngraduation rate (a)") +
   theme_minimal()
 
 title1 <- ggplot(data=cleaned_schools, aes(x=title_i_eligible, y=grad_rate_midpt)) + 
   geom_boxplot() +
-  labs(x="Title I eligible", y="Graduation rate", title="Comparison of graduation\nrate between Title I eligible\nand ineligible California\nhigh schools (b)") + 
+  labs(x="Title I eligible", y="Graduation rate", title="Comparison of graduation rate between\nTitle I eligible and ineligible California high\nschools (b)") + 
   theme_minimal()
 
-enrl + title1
+susp <- ggplot(data=cleaned_schools, aes(x=suspensions_instances, y=grad_rate_midpt)) +
+  geom_point() +
+  labs(x="Number of suspensions", y="Graduation rate", title="Comparison of the number of suspensions and graduation rate (c)") + 
+  theme_minimal()
+
+(enrl + title1) / susp
 ```
 
-The variables student enrollment and Title I eligibility are sourced from Common Core of Data (CCD) [@Data]. The CCD is the United States Department of Education's database on all public elementary and secondary schools and school districts [@CCD].
-
-Student enrollment reports the number of students enrolled in the school. @fig-ccd (a) shows a logarithmic relationship, so a log transformation should be applied. A school is Title I eligible if it is in a school district for children from low-income families [@NCES]. @fig-ccd (b) shows that schools that are not Title I eligible have a higher median graduation rate and is less varied, whereas schools that are Title I eligible are much more varied with a larger number of outliers. I picked these variables because small schools have been linked to higher graduation rates, and students from low-income families tend to have higher dropout rates [@HP2030].
-
-## The Civil Rights Data Collection {#sec-crdc}
-
-```{r fig-crdc-1}
+```{r fig-college, fig.width=8, fig.height=8}
 #| echo: false
 #| warning: false
 #| message: false
-#| fig-cap: "A scatter plot showing the relationship between the proportion of students enrolled in high level courses including the IB program (purple), AP program (pink), and gifted and talented programs (blue) (x-axis) and graduation rate (y-axis)."
+#| fig-cap: "Plot (a) shows a scatter plot showing the relationship between the proportion of students enrolled in high level courses including the IB program (purple), AP program (pink), and gifted and talented programs (blue) (x-axis) and graduation rate (y-axis). Plot (b) shows a scatter plot of the graduation rate over the number of students taking at least one AP exam. Plot (c) shows a scatter plot of the graduation rate over the number of students taking either the SAT or ACT."
 
 colors <- c("Proportion enrolled in IB" = "purple", "Proportion enrolled in gifted\nand talented" = "skyblue", "Proportion enrolled in AP" = "violetred")
-ggplot() +
+adv <- ggplot() +
 geom_point(data=cleaned_schools, aes(x=prop_IB, y=grad_rate_midpt, color="Proportion enrolled in IB"), alpha=0.2) +
   geom_point(data=cleaned_schools, aes(x=prop_gat, y=grad_rate_midpt, color="Proportion enrolled in gifted\nand talented"), alpha=0.2) +
   geom_point(data=cleaned_schools, aes(x=prop_ap, y=grad_rate_midpt, color="Proportion enrolled in AP"), alpha=0.2) +
-  labs(x="Proportion of students enrolled in higher level courses", y="Graduation rate", title="Comparison of students enrolled in higher level courses and\ngraduation rate", color="Legend") +
+  labs(x="Proportion of students enrolled in higher level courses", y="Graduation rate", title="Comparison of students enrolled in higher level courses and graduation rate (a)", color="Legend") +
   scale_color_manual(values=colors) +
   theme_minimal()
-```
-
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-
-ggplot(data=cleaned_schools, aes(x=prop_adv, y=grad_rate_midpt)) +
-  geom_point()
-
-```
-
-```{r fig-crdc-2}
-#| echo: false
-#| warning: false
-#| message: false
-#| fig-cap: "Plot (a) shows a scatter plot of the graduation rate over the number of students taking at least one AP exam. Plot (b) shows a scatter plot of the graduation rate over the number of students taking either the SAT or ACT."
 
 ap <- ggplot(data=cleaned_schools, aes(x=students_AP_exam_oneormore, y=grad_rate_midpt)) + 
   geom_point() +
-  labs(x="Number of students taking at least\none AP exam", y="Graduation rate", title="Comparison of the number\nof students taking at least\none AP exam and graduation\nrate (a)") +
+  labs(x="Number of students taking at least\none AP exam", y="Graduation rate", title="Comparison of the number\nof students taking at least\none AP exam and graduation\nrate (b)") +
   theme_minimal()
 
 sat <- ggplot(data=cleaned_schools, aes(x=students_SAT_ACT, y=grad_rate_midpt)) + 
   geom_point() +
-  labs(x="Number of students taking the SAT\nor ACT", y="Graduation rate", title="Comparison of the number\nof students taking at the\nSAT or ACT and graduation\nrate (b)") + 
+  labs(x="Number of students taking the SAT\nor ACT", y="Graduation rate", title="Comparison of the number\nof students taking at the\nSAT or ACT and graduation\nrate (c)") + 
   theme_minimal()
 
-ap + sat
-
+adv / (ap + sat)
 ```
 
-```{r fig-crdc-3}
-#| echo: false
-#| warning: false
-#| message: false
-#| fig-cap: "This shows the relationship between the number of suspensions in a school (x-axis) and graduation rate (y-axis)."
-
-ggplot(data=cleaned_schools, aes(x=suspensions_instances, y=grad_rate_midpt)) +
-  geom_point() +
-  labs(x="Number of suspensions", y="Graduation rate", title="Comparison of the number of suspensions and graduation\nrate") + 
-  theme_minimal()
-```
-
-```{r fig-crdc-4, fig.width=8, fig.height=8}
+```{r fig-teachers, fig.width=8, fig.height=8}
 #| echo: false
 #| warning: false
 #| message: false
@@ -201,15 +163,36 @@ ts <- ggplot(data=cleaned_schools, aes(x=salaries_teachers, y=grad_rate_midpt)) 
 (ftt + fyt) / (fta + ftc) / ts
 ```
 
+## Common Core of Data {#sec-cc}
+
+The variables student enrollment and Title I eligibility are sourced from Common Core of Data (CCD) [@Data]. The CCD is the United States Department of Education's database on all public elementary and secondary schools and school districts [@CCD].
+
+Student enrollment reports the number of students enrolled in the school. @fig-school (a) shows a logarithmic relationship, so a log transformation should be applied, but I will use a square root transformation because of the large number of zeros. A school is Title I eligible if it is in a school district for children from low-income families [@NCES]. @fig-school (b) shows that schools that are not Title I eligible have a higher median graduation rate and is less varied, whereas schools that are Title I eligible are much more varied with a larger number of outliers. I picked these variables because small schools have been linked to higher graduation rates, and students from low-income families tend to have higher dropout rates [@HP2030].
+
+## The Civil Rights Data Collection {#sec-crdc}
+
 The Civil Rights Data Collection (CRDC) comes from the United States Department of Education's Office for Civil Rights. This data is collection in order to ensure schools give students equal access to educational opportunities [@CRDC]. Data are collected from public schools and districts, justice facilities, charter schools, alternative schools, and special education schools [@CRDC].
 
-The variables from this dataset are the number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, the number of students enrolled in at least one AP course, the number of students that took one or more AP exams, the number of students participating in the SAT or ACT, the number of suspensions, the number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary. The number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, and the number of students enrolled in at least one AP course were transformed to the proportion of students enrolled in each respective program because that is more informative. @fig-crdc-1 shows a logarithmic relationship between these programs and graduation rate. @fig-crdc-2, @fig-crdc-3, @fig-crdc-4, and @fig-crdc-5 also show logarithmic relationships between the selected variables and graduation rate, so a log transformation is appropriate.
+The variables from this dataset are the number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, the number of students enrolled in at least one AP course, the number of students that took one or more AP exams, the number of students participating in the SAT or ACT, the number of suspensions, the number of full-time teachers, number of first-year teachers, number of full-time equivalent instructional aides or paraprofessionals, number of full-time equivalent school counselors, and teacher salary. The number of students enrolled in the International Baccalaureate Diploma Program, the number of students enrolled in the gifted and talented programs, and the number of students enrolled in at least one AP course were transformed to the proportion of students enrolled in each respective program because that is more informative. @fig-college (a) shows a logarithmic relationship between these programs and graduation rate. @fig-college (b) and (c), @fig-school (c), and all plots in @fig-teachers also show logarithmic relationships between the selected variables and graduation rate, so a square root transformation is appropriate.
 
 I picked these variables because students participating in higher level courses and/or participating in college-preparatory exams would be most interested in graduating and going to college. Suspensions would make it more difficult for students to graduate. Increased support from experienced teachers and other aides can motivate students to do well in school. Higher teacher salary will motivate teachers to put more effort in helping their students.
 
 ## ED*Facts* {#sec-edfacts}
 
-High school graduation rate comes from the ED*Facts* dataset. ED*Facts* collects and analyzes data from pre-kindergarten through twelfth grade supplied by state education agencies with other data within the U.S. Department of Education [@EDFacts].
+```{r fig-edf}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: "Histogram of graduation rate showing a left skewed distribution."
+
+ggplot(cleaned_schools, aes(grad_rate_midpt)) +
+  geom_histogram() +
+  labs(x="Graduation rate", y="Frequency", title="Distribution of graduation rate")
+```
+
+High school graduation rate comes from the ED*Facts* dataset. @fig-edf shows a left-skewed distribution in graduation rate.
+
+ED*Facts* collects and analyzes data from pre-kindergarten through twelfth grade supplied by state education agencies with other data within the U.S. Department of Education [@EDFacts].
 
 ## Alternative Data Sources
 
@@ -230,12 +213,40 @@ train <- training(schools_split)
 valid <- validation(schools_split)
 test <- testing(schools_split)
 
-base <- lm(grad_rate_midpt ~ enrollment + title_i_eligible + enrl_IB + enrl_AP + enrl_gifted_talented + students_AP_exam_oneormore + students_SAT_ACT + suspensions_instances + teachers_fte_crdc + teachers_first_year_fte + instructional_aides_fte + counselors_fte + salaries_teachers, data=train)
+# base model
+base <- lm(grad_rate_midpt ~ enrollment + title_i_eligible + prop_IB + prop_ap + prop_gat + students_AP_exam_oneormore + students_SAT_ACT + suspensions_instances + teachers_fte_crdc + teachers_first_year_fte + instructional_aides_fte + counselors_fte + salaries_teachers, data=train)
+
+# squre root transformation
+sqrt_tranfs <- lm(grad_rate_midpt ~ sqrt(enrollment) + title_i_eligible + sqrt(prop_IB) + sqrt(prop_ap) + sqrt(prop_gat) + sqrt(students_AP_exam_oneormore) + sqrt(students_SAT_ACT) + sqrt(suspensions_instances) + sqrt(teachers_fte_crdc) + sqrt(teachers_first_year_fte) + sqrt(instructional_aides_fte) + sqrt(counselors_fte) + sqrt(salaries_teachers), data=train)
+
+# variable selection using lasso
+library(glmnet)
+X <- train |> dplyr::select(!grad_rate_midpt) |> as.matrix()
+Y <- train$grad_rate_midpt
+lasso_res <- cv.glmnet(X, Y, alpha=1)
+best_lamda <- lasso_res$lambda.min
+best_model <- glmnet(X, Y, alpha=1, lambda=best_lamda)
 ```
 
-In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $Y_i$ represent the graduation rate at an individual school. Let $X_{i1}$ represent the number of students enrolled at that school, $X_{i2}$ equal 1 if a school is Title I eligible and 0 if it's not, $X_{i3}$ represent the number of students enrolled in the International Baccalaureate Diploma Program, $X_{i4}$ represent the number of students enrolled in the AP program, $X_{i5}$ represent the number of students enrolled in the gifted and talented program, $X_{i6}$ represent the number of students that took one or more AP exams, $X_{i7}$ represent the number of students participating in the SAT or ACT, $X_{i8}$ represent the number of suspensions, $X_{i9}$ represent the number of full-time teachers, $X_{i,10}$ represent the number of first-year teachers, $X_{i, 11}$ represent the number of full-time equivalent instructional aides or paraprofessionals, $X_{i, 12}$ represent the number of full-time equivalent school counselors, and $X_{i, 13}$ represent teacher salary.
+## Base Model
 
-The model can we written as $$Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \beta_3 X_{i3} + \beta_4 X_{i4} + \beta_5 X_{i5} + \beta_6 X_{i6} + \beta_7 X_{i7} + \beta_8 X_{i8} + \beta_9 X_{i9} + \beta_{10} X_{i,10} + \beta_{11} X_{i,11} + \beta_{12} X_{i,12} + \beta_{13} X_{i,13} + \varepsilon_i \text{ for i = 1, ..., n}$$ where $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $\beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant, $n$ is the number of schools in the dataset, and $\varepsilon_i$ represents the error.
+In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $\boldsymbol{Y}$ be the `r nrow(cleaned_schools)` x 1 vector where each entry represents the graduation rate at each school. Let $\boldsymbol{X}$ be the `r nrow(cleaned_schools)` x 13 matrix where each column is a predictor. Let $X_{1}$ be the vector representing the number of students enrolled, $X_{2}$ be the vector equaling 1 if a school is Title I eligible and 0 if it's not, $X_{3}$ be the vector representing the proportion of students enrolled in the International Baccalaureate Diploma Program, $X_{4}$ be the vector representing the proportion of students enrolled in the AP program, $X_{5}$ be the vector representing the proportion of students enrolled in the gifted and talented program, $X_{6}$ be the vector representing the number of students that took one or more AP exams, $X_{7}$ be the vector representing the number of students participating in the SAT or ACT, $X_{8}$ be the vector representing the number of suspensions, $X_{9}$ be the vector representing the number of full-time teachers, $X_{10}$ be the vector representing the number of first-year teachers, $X_{11}$ be the vector representing the number of full-time equivalent instructional aides or paraprofessionals, $X_{12}$ be the vector representing the number of full-time equivalent school counselors, and $X_{13}$ be the vector representing teacher salary.
+
+The model can we written as $$\boldsymbol{Y} = \boldsymbol{X}\beta + \boldsymbol{\varepsilon}$$ where $\beta$ is the vector of coefficients for each predictor: $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $\beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant. $\varepsilon$ is the vector containing the error.
+
+## Transformed Model
+
+The next model used is the model where each predictor except Title I eligibility is transformed using the square root. While a log transformation would have been ideal, there are many zeros in the dataset which is not an acceptable input in a logarithmic function. A square root transformation is similar to a logarithmic one and allows zeros in its domain which makes it a viable substitution.
+
+The model can be written as: $$\boldsymbol{Y} = \sqrt{\boldsymbol{X}}\beta + \boldsymbol{\varepsilon}$$ where each variable is equivalent to those in the base model.
+
+## Least Absolute Shrinkage and Selection Operator (LASSO) Regression Model
+
+The last model created is one using LASSO regression to perform variable selection. LASSO is a shrinkage or regularization regression method that has the ability to "shrink" estimated coefficients to zero, carrying out variable selection. Alongside this, it reduces the variance of parameter estimates. LASSO aims to minimize the equation: $$\sum_{i=1}^n (\boldsymbol{Y}_i - \boldsymbol{X}_i^T\boldsymbol{\beta})^2 + \lambda \sum_{j=1}^{p-1}|\beta_j|$$ where $\lambda \geq 0$ is a tuning parameter that controls the level of regularization, n represents the number of observations, and p is the number of predictors. Essentially, we are minimizing the error sum of squares (SSE) with a penalty term added to it.
+
+I use the `lm()` function from the R programming language [@R] to create the base model and the transformed model. I use the `cv.glmnet()` function from the `glmnet` package to use LASSO regression to select the best model. 
+
+## Assumptions of Linear Regression
 
 The assumptions for linear regression are:
 
@@ -246,15 +257,16 @@ The assumptions for linear regression are:
 5.  The variance of the errors must be equal.
 6.  Errors must be normal.
 
+Since the goal of this analysis is prediction, the most important assumption that should be met is linearity. After the transformations, there appears to be a linear relationship between the predictors and graduation rate.
+
+## Limitations of Analysis
+
+
 present any model or statistical methods clearly using mathematical notation and plain English explanations.
 
-Every symbol and component of the model should be introduced and described.
-
-This section must clearly describe any relevant assumptions and whether they are met.
 
 Describe possible limitations of your analysis.
 
-describe the software used for implementation
 
 include any necessary steps taken for model selection and validation.
 
@@ -277,14 +289,12 @@ Identification of potential improvements and extensions or future areas of relat
 
 # Questions
 
-1.  can't remove all NAs without getting an empty dataset. what to do?
-2.  should i be having this many graphs?? does figure 2 look ok
-3.  still confused about interaction, esp how to check
-4.  should i put a graph of the log transformations?
-5.  do i need to make a graph or anything for graduation rate?
-6.  instead of seeing if there is enrollment in either ap, ib, or other program, should i do any program at all? (get issue with students being in multiple programs)
-7.  can i write the model in matrix form or does it have to be all written out. if latter how to get math to not go off the page
-8.  are the assumptions different?
-9.  if i know there is a log relationship, should i start start with the most basic model or do a transformation as the first model?
+1.  should i be having this many graphs?? does figure 2 look ok only 4-5, maybe if 0 remove it as a proportion
+2.  still confused about interaction, esp how to check, fit a model and see
+3.  is there a reason to choose regularization vs stepwise selection for variable selection
+4.  how to add interactions in lasso
+5.  do i nee to explain what each beta values means for each model
+6.  do i need to explain lasso more
+7.  is assumption section ok
 
 # References {#sec-ref}
