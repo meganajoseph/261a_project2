@@ -199,7 +199,7 @@ High school graduation rate comes from the ED*Facts* dataset. @fig-edf shows a l
 
 ED*Facts* collects and analyzes data from pre-kindergarten through twelfth grade supplied by state education agencies with other data within the U.S. Department of Education [@EDFacts].
 
-## Alternative Data Sources
+## Alternative Data Sources {#sec-alt-ds}
 
 A good alternate data source would be at the student level rather than the school level. This can be difficult to find, though, because the students are not legal adults and due to Family Educational Rights and Privacy Act (FERPA) which protects the distribution of educational records without the consent of parents or the student if they are over 18 years old. Information on absenteeism, family income level, extracurriculars of the students, involvement of parents and teachers, and reading level would also help in predicting graduation rates.
 
@@ -211,6 +211,7 @@ A good alternate data source would be at the student level rather than the schoo
 #| message: false
 
 # split into training/test/validation
+set.seed(111)
 library("tidymodels")
 schools_split <- initial_validation_split(selected_cleaned_schools, prop=c(0.7, 0.15))
 
@@ -227,7 +228,19 @@ sqrt_tranfs <- lm(grad_rate_midpt ~ sqrt(enrollment) + title_i_eligible + sqrt(p
 # variable selection using lasso
 library(glmnet)
 X_train <- train |> dplyr::select(!grad_rate_midpt)
-X_train <- transform(X_train, enrollment=sqrt(enrollment), prop_IB=sqrt(prop_IB), prop_ap=sqrt(prop_ap), prop_gat=sqrt(prop_gat), prop_ap_exam=sqrt(prop_ap_exam), prop_sat_act=sqrt(prop_sat_act), suspensions_instances=sqrt(suspensions_instances), teachers_fte_crdc=sqrt(teachers_fte_crdc), teachers_first_year_fte=sqrt(teachers_first_year_fte), instructional_aides_fte=sqrt(instructional_aides_fte), counselors_fte=sqrt(counselors_fte), salaries_teachers=sqrt(salaries_teachers))
+X_train <- transform(X_train, 
+                     enrollment=sqrt(enrollment), 
+                     prop_IB=sqrt(prop_IB), 
+                     prop_ap=sqrt(prop_ap), 
+                     prop_gat=sqrt(prop_gat), 
+                     prop_ap_exam=sqrt(prop_ap_exam), 
+                     prop_sat_act=sqrt(prop_sat_act), 
+                     suspensions_instances=sqrt(suspensions_instances), 
+                     teachers_fte_crdc=sqrt(teachers_fte_crdc), 
+                     teachers_first_year_fte=sqrt(teachers_first_year_fte), 
+                     instructional_aides_fte=sqrt(instructional_aides_fte), 
+                     counselors_fte=sqrt(counselors_fte), 
+                     salaries_teachers=sqrt(salaries_teachers))
 X_train <- as.matrix(X_train)
 Y_train <- train$grad_rate_midpt
 lasso_res <- cv.glmnet(X_train, Y_train, alpha=1)
@@ -236,29 +249,29 @@ best_model <- glmnet(X_train, Y_train, alpha=1, lambda=best_lamda)
 # coef(best_model, s="lambda.min")
 ```
 
-## Base Model
+## Base Model {#sec-bm}
 
 In an attempt to answer this research question, I will first fit a multiple linear regression model using all variables and no transformations. Let $\boldsymbol{Y}$ be the `r nrow(cleaned_schools)` x 1 vector where each entry represents the graduation rate at each school. Let $\boldsymbol{X}$ be the `r nrow(cleaned_schools)` x 13 matrix where each column is a predictor. Let $X_{1}$ be the vector representing the number of students enrolled, $X_{2}$ be the vector equaling 1 if a school is Title I eligible and 0 if it's not, $X_{3}$ be the vector representing the proportion of students enrolled in the International Baccalaureate Diploma Program, $X_{4}$ be the vector representing the proportion of students enrolled in the AP program, $X_{5}$ be the vector representing the proportion of students enrolled in the gifted and talented program, $X_{6}$ be the vector representing the number of students that took one or more AP exams, $X_{7}$ be the vector representing the number of students participating in the SAT or ACT, $X_{8}$ be the vector representing the number of suspensions, $X_{9}$ be the vector representing the number of full-time teachers, $X_{10}$ be the vector representing the number of first-year teachers, $X_{11}$ be the vector representing the number of full-time equivalent instructional aides or paraprofessionals, $X_{12}$ be the vector representing the number of full-time equivalent school counselors, and $X_{13}$ be the vector representing teacher salary.
 
 The model can we written as $$\boldsymbol{Y} = \boldsymbol{X}\beta + \boldsymbol{\varepsilon}$$ where $\beta$ is the vector of coefficients for each predictor: $\beta_0$ represents the mean of the probability distribution of the graduation rate when all predictors are 0, $\beta_1$ represents the average change in graduation rate for an additional student enrolled, holding all other variables constant, $\beta_2$ represents the average change in graduation rate for a Title I school, holding all other predictors constant, $\beta_3$ represents the average change in graduation rate for an additional student enrolled in the IB program, holding all other variables constant, $\beta_4$ represents the average change in graduation rate for an additional student enrolled in the AP program, holding all other variables constant, $\beta_5$ represents the average change in graduation rate for an additional student enrolled in the gifted and talented program, holding all other variables constant, $\beta_6$ represents the average change in graduation rate for an additional student that took one or more AP exams, holding all other variables constant, $\beta_7$ represents the average change in graduation rate for an additional student participating in the SAT or ACT, holding all other variables constant, $\beta_8$ represents the average change in graduation rate for an additional suspension instance, holding all other variables constant, $\beta_9$ represents the average change in graduation rate for an additional full-time teacher, holding all other variables constant, $\beta_{10}$ represents the average change in graduation rate for an additional first-year teacher, holding all other variables constant, $\beta_{11}$ represents the average change in graduation rate for an additional full-time equivalent instructional aide or paraprofessional, holding all other variables constant, $\beta_{12}$ represents the average change in graduation rate for an additional full-time equivalent school counselor, holding all other variables constant, $\beta_{13}$ represents the average change in graduation rate for a one USD increase in teacher salary, holding all other variables constant. $\varepsilon$ is the vector containing the error.
 
-## Transformed Model
+## Transformed Model {#sec-tm}
 
 The next model used is the model where each predictor except Title I eligibility is transformed using the square root. While a log transformation would have been ideal, there are many zeros in the dataset which is not an acceptable input in a logarithmic function. A square root transformation is similar to a logarithmic one and allows zeros in its domain which makes it a viable substitution.
 
 The model can be written as: $$\boldsymbol{Y} = \sqrt{\boldsymbol{X}}\beta + \boldsymbol{\varepsilon}$$ where each variable is equivalent to those in the base model.
 
-## Least Absolute Shrinkage and Selection Operator (LASSO) Regression Model
+## Least Absolute Shrinkage and Selection Operator (LASSO) Regression Model {#sec-lasso}
 
 The last model created is one using LASSO regression to perform variable selection. LASSO is a shrinkage or regularization regression method that has the ability to "shrink" estimated coefficients to zero, carrying out variable selection. Alongside this, it reduces the variance of parameter estimates. LASSO aims to minimize the equation: $$\sum_{i=1}^n (\boldsymbol{Y}_i - \boldsymbol{Z}_i^T\boldsymbol{\beta})^2 + \lambda \sum_{j=1}^{p-1}|\beta_j|$$ where $Z_i = \sqrt{X_i}$, $\lambda \geq 0$ is a tuning parameter that controls the level of regularization, n represents the number of observations, and p is the number of predictors. Essentially, we are minimizing the error sum of squares (SSE) with a penalty term added to it.
 
 When picking the best lambda value, `cv.glmnet()` uses cross-validation to pick the best lambda that produces a mean squared error within one standard error of the mean squared error of the true best lambda [@lambda]. This is because the true best lambda may overfit the model by setting many estimated coefficients to zero. The user is able to pick any lambda used by the function based on their own analysis. For ease, I will use the default best lambda.
 
-## Model Selection
+## Model Selection {#sec-model-sel}
 
 To determine which model is the best, I will first split the data into a 70% training, 15% testing, and 15% validation set. Then, I will train the models on the training set and find the mean squared prediction error using the validation set. This is defined as $$E[(Y^* - \hat{Y}^*)^2]$$ where $Y^*$ is the true graduation rate and $\hat{Y}^*$ is the predicted graduation rate using the model. This is the expected squared difference between the prediction and the true value over the validation data population. The one that gives the best mean squared error will be the best model. Finally, I will use the testing set to estimate the performance, such as error rates, for the final model.
 
-## Assumptions of Linear Regression
+## Assumptions of Linear Regression {#sec-assump}
 
 The assumptions of using linear regression for inference are:
 
@@ -271,13 +284,13 @@ The assumptions of using linear regression for inference are:
 
 Since the goal of this analysis is point prediction, the most important assumption that should be met is linearity. If my goal was to create prediction intervals, I would need to meet the normality of errors assumption. After the transformations, there appears to be a linear relationship between the predictors and graduation rate.
 
-## Limitations of Analysis
+## Limitations of Analysis {#sec-limit}
 
-One limitation of this analysis is that it is at the school level rather than the student level. While there are many reasons as to why this is the case, it does limit the analysis, and predictions can only be made for schools. An analysis at the student level, though, would change the problem from linear regression to logistic regression since the response would be whether the student graduated or not. Another limitation is that interaction effects are not included in any models. This is because it reduces the interpretability even though it could improve performance. In a future analysis, researching which variables have a theroretical interaction with each other would build upon this. Additionally, there may be models better suited for this research question that I have not learned yet.
+One limitation of this analysis is that it is at the school level rather than the student level. While there are many reasons as to why this is the case, it does limit the analysis, and predictions can only be made for schools. An analysis at the student level, though, would change the problem from linear regression to logistic regression since the response would be whether the student graduated or not. Another limitation is that interaction effects are not included in any models. This is because it reduces the interpretability even though it could improve performance. In a future analysis, researching which variables have a theoretical interaction with each other would build upon this. Additionally, there may be models better suited for this research question that I have not learned yet.
 
-## Software
+## Software {#sec-soft}
 
-I use the `lm()` function from the R programming language [@R] to create the base model and the transformed model. I use the `cv.glmnet()` function from the `glmnet` package [@glmnet] to use LASSO regression to select the best model.
+I use the `lm()` function from the R programming language [@R] to create the base model and the transformed model. I use the `cv.glmnet()` function from the `glmnet` package [@glmnet] to use LASSO regression to select the most important variables.
 
 # Results {#sec-results}
 
@@ -287,7 +300,19 @@ I use the `lm()` function from the R programming language [@R] to create the bas
 #| message: false
 
 X_valid <- valid |> dplyr::select(!grad_rate_midpt)
-X_valid <- transform(X_valid, enrollment=sqrt(enrollment), prop_IB=sqrt(prop_IB), prop_ap=sqrt(prop_ap), prop_gat=sqrt(prop_gat), prop_ap_exam=sqrt(prop_ap_exam), prop_sat_act=sqrt(prop_sat_act), suspensions_instances=sqrt(suspensions_instances), teachers_fte_crdc=sqrt(teachers_fte_crdc), teachers_first_year_fte=sqrt(teachers_first_year_fte), instructional_aides_fte=sqrt(instructional_aides_fte), counselors_fte=sqrt(counselors_fte), salaries_teachers=sqrt(salaries_teachers))
+X_valid <- transform(X_valid, 
+                     enrollment=sqrt(enrollment), 
+                     prop_IB=sqrt(prop_IB), 
+                     prop_ap=sqrt(prop_ap), 
+                     prop_gat=sqrt(prop_gat), 
+                     prop_ap_exam=sqrt(prop_ap_exam), 
+                     prop_sat_act=sqrt(prop_sat_act), 
+                     suspensions_instances=sqrt(suspensions_instances), 
+                     teachers_fte_crdc=sqrt(teachers_fte_crdc), 
+                     teachers_first_year_fte=sqrt(teachers_first_year_fte), 
+                     instructional_aides_fte=sqrt(instructional_aides_fte), 
+                     counselors_fte=sqrt(counselors_fte), 
+                     salaries_teachers=sqrt(salaries_teachers))
 Y_valid <- valid$grad_rate_midpt
 
 # MSPE base model
@@ -302,14 +327,37 @@ mspe_lasso <- mean((Y_valid - predict(best_model, newx=as.matrix(X_valid)))**2)
 
 # estimate performance
 X_test <- test |> dplyr::select(!grad_rate_midpt)
-X_test <- transform(X_test, enrollment=sqrt(enrollment), prop_IB=sqrt(prop_IB), prop_ap=sqrt(prop_ap), prop_gat=sqrt(prop_gat), prop_ap_exam=sqrt(prop_ap_exam), prop_sat_act=sqrt(prop_sat_act), suspensions_instances=sqrt(suspensions_instances), teachers_fte_crdc=sqrt(teachers_fte_crdc), teachers_first_year_fte=sqrt(teachers_first_year_fte), instructional_aides_fte=sqrt(instructional_aides_fte), counselors_fte=sqrt(counselors_fte), salaries_teachers=sqrt(salaries_teachers))
+X_test <- transform(X_test, 
+                    enrollment=sqrt(enrollment), 
+                    prop_IB=sqrt(prop_IB), 
+                    prop_ap=sqrt(prop_ap), 
+                    prop_gat=sqrt(prop_gat), 
+                    prop_ap_exam=sqrt(prop_ap_exam), 
+                    prop_sat_act=sqrt(prop_sat_act), 
+                    suspensions_instances=sqrt(suspensions_instances), 
+                    teachers_fte_crdc=sqrt(teachers_fte_crdc), 
+                    teachers_first_year_fte=sqrt(teachers_first_year_fte), 
+                    instructional_aides_fte=sqrt(instructional_aides_fte), 
+                    counselors_fte=sqrt(counselors_fte), 
+                    salaries_teachers=sqrt(salaries_teachers))
 Y_test <- test$grad_rate_midpt
 
 mspe_final <- mean((Y_test - predict(best_model, newx=as.matrix(X_test)))**2)
 ```
 
-describe the fitted model and its implications.\
-This section should include relevant tables, graphs, and quantitative results, as well as plain English explanations of all of these components.
+The final model is chose is the LASSO regression model. The estimated intercept term is `r round(coef(best_model, s="lambda.min")[1], 3)`, but since it is not possible for all predictors to be zero, this has little meaning. The estimated slope parameter for enrollment is `r round(coef(best_model, s="lambda.min")[2], 3)` which represents the average increase in graduation rate for an additional square root of a student, holding all other predictors constant. Title I eligibility was removed in the process, resulting in an estimated parameter of 0. The estimated slope parameter for the number of suspensions is `r round(coef(best_model, s="lambda.min")[4], 3)` which represents the average decrease in graduation rate for an additional square root of a suspension instance, holding all other predictors constant. The estimated slope parameter for the proportion of students in the IB program is `r round(coef(best_model, s="lambda.min")[5], 3)` which represents the average increase in graduation rate for an additional square root of a unit increase in the proportion of students in the IB program, holding all other predictors constant. The estimated slope parameter for the proportion of students in the gifted and talented program is `r round(coef(best_model, s="lambda.min")[6], 3)` represents the average decrease in graduation rate for an additional square root of a unit increase in the proportion of students in the gifted and talented program, holding all other predictors constant. The estimated slope parameter for the proportion of students in the AP program is `r round(coef(best_model, s="lambda.min")[7], 3)` which represents the average increase in graduation rate for an additional square root of a unit increase in the proportion of students in the AP program, holding all other predictors constant. The estimated slope parameter for the proportion of students taking one or more AP exams is `r round(coef(best_model, s="lambda.min")[8], 3)` which represents the average decrease in graduation rate for an additional square root of a unit increase in the proportion of students taking one or more AP exams, holding all other predictors constant. The estimated slope parameter for the proportion of students participating in the SAT or ACT is `r round(coef(best_model, s="lambda.min")[9], 3)` which represents the average increase in graduation rate for an additional square root of a unit increase in the proportion of students participating in the SAT or ACT, holding all other predictors constant. The estimated slope parameter for the number of full time equivalent teachers is `r round(coef(best_model, s="lambda.min")[10], 3)` which represents the average decrease in graduation rate for an additional square root of a unit increase in the number of full time equivalent teachers, holding all other predictors constant. The estimated slope parameter for the number of first year teachers is `r round(coef(best_model, s="lambda.min")[11], 3)` which represents the average increase in graduation rate for an additional square root of a unit increase in the number of first year teachers, holding all other predictors constant. The estimated slope parameter for the number of instructional aids is `r round(coef(best_model, s="lambda.min")[12], 3)` which represents the average decrease in graduation rate for an additional square root of a unit increase in the number of instructional aides, holding all other predictors constant. The estimated slope parameter for the number of counselors is `r round(coef(best_model, s="lambda.min")[13], 3)` which represents the average decrease in graduation rate for an additional square root of a unit increase in the number of counselors, holding all other predictors constant. Teacher salary was also removed by the LASSO model, resulting in an estimated parameter of 0.
+
+Since LASSO regularization removed Title I eligibility and teacher salary from the model, it believed it was not as important in predicting graduation rate or may already be explained by some other variables. This may be because Title I eligibility is binary, and including It's surprising that many estimated parameters are negative when one would assume that, for example, having more students taking an AP exam would increase graduation rates rather than decrease. There may be additional factors at play behind the scene, especially since this is at the school level.
+
+## Estimating Performance {#sec-perform}
+
+Table 1 presents the mean squared prediction error for each model created and the final model, with the base model having the highest MSPE and the LASSO model having the lowest MSPE, and the MSPE on the test set is comparable to that of the validation set for the same model.
+
+| Base Model MSPE (Validation) | Transformed Model MSPE (Validation) | LASSO Model MSPE (Validation) | Final Model MSPE (Test) |
+|------------------|------------------|------------------|------------------|
+| `r round(mspe_bm, 3)` | `r round(mspe_tm, 3)` | `r round(mspe_lasso, 3)` | `r round(mspe_final, 3)` |
+
+: This table shows the mean squared prediction errors on the validation set for each created model and for the chosen model on the testing set.
 
 Clearly explain what the model results show and connect your results to the central research question(s) and their broader context
 
@@ -328,5 +376,7 @@ Identification of potential improvements and extensions or future areas of relat
 1.  should i be having this many graphs?? does figure 2 look ok only 4-5, maybe if 0 remove it as a proportion
 2.  do i need to explain lasso more, change x to z and explain how lambda is calculated
 3.  do i need to add more info for describing the dataset
+4.  should i also put information on mse of training? should i put other metrics besides mspe?
+5.  is my interpretation of the estimated parameters ok?
 
 # References {#sec-ref}
