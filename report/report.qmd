@@ -8,6 +8,9 @@ abstract: ""
 format: pdf
 bibliography: references.bib
 number-sections: true
+include-in-header: 
+  text: |
+    \setcounter{MaxMatrixCols}{20}
 ---
 
 # Introduction {#sec-intro}
@@ -363,13 +366,23 @@ Clearly explain what the model results show and connect your results to the cent
 
 # Discussion {#sec-disc}
 
-A brief summary of the paper
+The aim of this paper was to answer the following research question: Can college readiness, staff demographics, and school demographics predict graduation rates in California high schools? I investigated this using data from the Common Core of Data, The Civil Rights Data Collection, and ED*Facts*. Then, I created three models. The first was a multiple regression model with graduation rate as the response and the number of students enrolled, Title I eligibility, the proportion of students in the IB program, the proportion of students in the AP program, the proportion of students in the gifted and talented program, the proportion of students that took one or more AP exams, the proportion of students taking the SAT or ACT, the number of suspensions, the number of full-time teachers, the number of full-time first-year teachers, the number of instructional aides and paraprofessionals, the number of counselors, and teacher salary as predictors. The second model transformed each predictor except Title I eligibility using a square root transformation. The last model was made using LASSO on the previous model to select the best predictors. The model that predicted the best out of the three was the LASSO model: $$\boldsymbol{Y} = \begin{bmatrix}
+\vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert \\ 
+1 & X_1 & X_2 & X_3 & X_4 & X_5 & X_6 & X_7 & X_8 & X_9 & X_{10} & X_{11} & X_{12} & X_{13} \\ \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert & \vert
+\end{bmatrix}
+\begin{bmatrix} 
+`r round(coef(best_model, s="lambda.min")[1], 3)` \\ `r round(coef(best_model, s="lambda.min")[2], 3)` \\ `r round(coef(best_model, s="lambda.min")[3], 3)` \\ `r round(coef(best_model, s="lambda.min")[4], 3)` \\ `r round(coef(best_model, s="lambda.min")[5], 3)` \\ `r round(coef(best_model, s="lambda.min")[6], 3)` \\ `r round(coef(best_model, s="lambda.min")[7], 3)` \\ `r round(coef(best_model, s="lambda.min")[8], 3)` \\ `r round(coef(best_model, s="lambda.min")[9], 3)` \\ `r round(coef(best_model, s="lambda.min")[10], 3)` \\ `r round(coef(best_model, s="lambda.min")[11], 3)` \\ `r round(coef(best_model, s="lambda.min")[12], 3)` \\ `r round(coef(best_model, s="lambda.min")[13], 3)` \\ `r round(coef(best_model, s="lambda.min")[14], 3)` \\   
+\end{bmatrix}$$ The predictors with a parameter estimate of zero, Title I eligibility and teacher salary, were removed by LASSO regularization. This model has a test mean squared prediction error of `r round(mspe_final, 3)`. This means that college readiness, staff demographics, and school demographics can predict graduation rates, but Title I eligibility and teacher salary were not influential enough to improve predictions.
 
-Discussion of your key findings and what their implications are for your research question
+## Potential Weaknesses
 
-Discussion of some potential weaknesses of your study
+One weakness of this study is the lack of interaction terms. For example, knowing if a school is Title I eligible or not may impact the proportion of students who take an AP exam or SAT/ACT because one needs to pay to take those tests. Including them could explain more variability and increase the predictive power of the final model.
 
-Identification of potential improvements and extensions or future areas of related research.
+Another weakness is that there are more factors to graduation rate than the predictors I chose. Many of these factors, like family income level, if the student is first generation, and student responsibilities, are at the student level and not generally available or quantifiable. Graduation rates can also be affected by sudden changes, such as a death in the family, that may cause a decrease in performance or even cause the student to drop-out all together. 
+
+## Possible Extensions
+
+An extension of this study would be to put out a survey at the student level to find more information on the students' motivations and other factors mentioned above. Another extension would be to answer an inference-based research question, such as using an F-test to determine if any of the chosen predictors do not have a relationship with graduation rate. One could also go beyond and predict success in college and beyond using a different set of predictors, which is useful for college admissions.
 
 # Questions
 
@@ -378,5 +391,6 @@ Identification of potential improvements and extensions or future areas of relat
 3.  do i need to add more info for describing the dataset
 4.  should i also put information on mse of training? should i put other metrics besides mspe?
 5.  is my interpretation of the estimated parameters ok?
+6.  is the way i wrote the final model ok
 
 # References {#sec-ref}
