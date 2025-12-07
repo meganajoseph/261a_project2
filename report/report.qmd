@@ -15,21 +15,17 @@ include-in-header:
 
 # Introduction {#sec-intro}
 
-the motivation for the analysis
+The 2025 high school graduation rate for the State of California has risen to 87.5 percent, which is an increase of 4.5 percentage points from 2017 [@intro_stat]. As graduation requirements have changed and continue to change, it is only natural to see what impacts whether a student will graduate or not. Often these factors are related to the individual student's motivation as well as familial, school, and community factors [@HP2030]. It has already been shown that there are racial and ethnic disparities in high school graduation rates, and parental and teacher involvement, household-income level, reading skill level, and gender affect graduation rates [@HP2030]. These factors can also impact college readiness, such as decisions on taking the SAT or ACT, or stem from staff demographics, like teacher salary, and school demographics, such as Title I eligibility. This has motivated the research question: Can college readiness, staff demographics, and school demographics predict graduation rates in California high schools?
 
-Can college readiness, staff demographics, and school demographics predict graduation rates in California high schools?
+As a student pursuing their Masters in Statistics, there are many things I still don't know. I am not very well-versed in education besides having been a student in California and also teaching and tutoring California students which may impact the results of this study. Additionally, I am still learning about regression as a whole which may also impact the study.
 
-a brief overview of the broader context
+In this study, I use the Education Data Explorer from the Urban Institute's Center on Education Data and Policy to compile a dataset including the variables of interest. The Education Data Explorer allows you to create your own dataset based on certain factors in order to help students [@Data_about]. This project draws from the data sources Common Core of Data, Small Area Income and Poverty Estimates, The Civil Rights Data Collection, ED*Facts*, Integrated Postsecondary Education Data System, College Scorecard, National Historical Geographic Information System, Federal Student Aid, National Association of College and University Business Officers, National Center for Charitable Statistics, Model Estimates of Poverty in Schools (MEPS), Equity in Athletics Data (EADA), and Campus Safety and Security [@Data_about].
 
-the knowledge gap that is addressed by the paper
+I used graduation rate as the response and college readiness (the proportion of students in the IB program, the proportion of students in the AP program, the proportion of students in the gifted and talented program, the proportion of students that took one or more AP exams, and the proportion of students taking the SAT or ACT), staff demographics (the number of full-time teachers, the number of full-time first-year teachers, the number of instructional aides and paraprofessionals, the number of counselors, and teacher salary ), and school demographics (the number of students enrolled, Title I eligibility, and the number of suspensions) as predictors. The three models created were a multiple regression model, a square root transformed multiple regression model, and a reduced LASSO regularized model.
 
-what was done in the analysis
+To pick the best model, I compared the validation mean squared prediction error of each and picked the one with the lowest which was the LASSO model. This model removed Title I eligibility and teacher salary, implying that these are not as influential in prediction.
 
-the key findings and why they are important
-
-the structure of the paper
-
-This project draws from the data sources Common Core of Data, Small Area Income and Poverty Estimates, The Civil Rights Data Collection, ED*Facts*, Integrated Postsecondary Education Data System, College Scorecard, National Historical Geographic Information System, Federal Student Aid, National Association of College and University Business Officers, National Center for Charitable Statistics, Model Estimates of Poverty in Schools (MEPS), Equity in Athletics Data (EADA), and Campus Safety and Security [@Data_about].
+The remainder of the paper is structured as follows: @sec-data discusses the data, @sec-methods discusses the models, @sec-results presents the results, and @sec-disc discusses the implications of the results.
 
 # Data {#sec-data}
 
@@ -378,7 +374,7 @@ The aim of this paper was to answer the following research question: Can college
 
 One weakness of this study is the lack of interaction terms. For example, knowing if a school is Title I eligible or not may impact the proportion of students who take an AP exam or SAT/ACT because one needs to pay to take those tests. Including them could explain more variability and increase the predictive power of the final model.
 
-Another weakness is that there are more factors to graduation rate than the predictors I chose. Many of these factors, like family income level, if the student is first generation, and student responsibilities, are at the student level and not generally available or quantifiable. Graduation rates can also be affected by sudden changes, such as a death in the family, that may cause a decrease in performance or even cause the student to drop-out all together. 
+Another weakness is that there are more factors to graduation rate than the predictors I chose. Many of these factors, like family income level, if the student is first generation, and student responsibilities, are at the student level and not generally available or quantifiable. Graduation rates can also be affected by sudden changes, such as a death in the family, that may cause a decrease in performance or even cause the student to drop-out all together.
 
 ## Possible Extensions
 
@@ -387,10 +383,10 @@ An extension of this study would be to put out a survey at the student level to 
 # Questions
 
 1.  should i be having this many graphs?? does figure 2 look ok only 4-5, maybe if 0 remove it as a proportion
-2.  do i need to explain lasso more, change x to z and explain how lambda is calculated
-3.  do i need to add more info for describing the dataset
-4.  should i also put information on mse of training? should i put other metrics besides mspe?
-5.  is my interpretation of the estimated parameters ok?
-6.  is the way i wrote the final model ok
+2.  do i need to add more info for describing the dataset
+3.  should i also put information on mse of training? should i put other metrics besides mspe?
+4.  is my interpretation of the estimated parameters ok?
+5.  is the way i wrote the final model ok
+6.  not sure if what i'm concluding is right, like can i just say that i answered the rq because lasso didn't delete all of them?
 
 # References {#sec-ref}
