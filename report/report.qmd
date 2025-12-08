@@ -1,10 +1,10 @@
 ---
-title: "Project 2"
+title: "College Readiness, Staff Demographics, and School Demographics May Predict California High School Graduation Rates"
 author: "Megan Joseph"
 thanks: "Project repository available at: [https://github.com/meganajoseph/261a_project2](https://github.com/meganajoseph/261a_project2)."
 date: today
 date-format: long
-abstract: ""
+abstract: "California graduation requirements have changed over the years, so one might be interested in what impacts graduation rates. Using data from the Education Data Explorer from the Ubran Institute's Center on Education Data and Policy, I investigate whether college readiness, staff demographics, and school demographics can predict graduation rates in California high schools. I first fit a multiple regression model, then a transformed model, then a reduced model using LASSO regularization, which gave the highest prediction accuracy on the testing set. The LASSO model removed Title I eligibility and teacher salary from the model, implying that they are not as influential in predictions. However, there may be more impactful predictors regarding student motivation and parental involvement that can also predict graduation rate."
 format: pdf
 bibliography: references.bib
 number-sections: true
@@ -358,8 +358,6 @@ Table 1 presents the mean squared prediction error for each model created and th
 
 : This table shows the mean squared prediction errors on the validation set for each created model and for the chosen model on the testing set.
 
-Clearly explain what the model results show and connect your results to the central research question(s) and their broader context
-
 # Discussion {#sec-disc}
 
 The aim of this paper was to answer the following research question: Can college readiness, staff demographics, and school demographics predict graduation rates in California high schools? I investigated this using data from the Common Core of Data, The Civil Rights Data Collection, and ED*Facts*. Then, I created three models. The first was a multiple regression model with graduation rate as the response and the number of students enrolled, Title I eligibility, the proportion of students in the IB program, the proportion of students in the AP program, the proportion of students in the gifted and talented program, the proportion of students that took one or more AP exams, the proportion of students taking the SAT or ACT, the number of suspensions, the number of full-time teachers, the number of full-time first-year teachers, the number of instructional aides and paraprofessionals, the number of counselors, and teacher salary as predictors. The second model transformed each predictor except Title I eligibility using a square root transformation. The last model was made using LASSO on the previous model to select the best predictors. The model that predicted the best out of the three was the LASSO model: $$\boldsymbol{Y} = \begin{bmatrix}
@@ -388,5 +386,6 @@ An extension of this study would be to put out a survey at the student level to 
 4.  is my interpretation of the estimated parameters ok?
 5.  is the way i wrote the final model ok
 6.  not sure if what i'm concluding is right, like can i just say that i answered the rq because lasso didn't delete all of them?
+7.  lines are appearing in references because of no author, how to / should i fix?
 
 # References {#sec-ref}
